@@ -1,26 +1,111 @@
 import os
 import shutil
 import math
+import magic
+
+
+Sailpathsfile = open(".\\data\\starting_paths.txt",'r+')
+sailpath = []
+deafultSailpath = ''
+for i in Sailpathsfile:
+    if i[0:1] ==  "D_":
+        deafultSailpath = i[1:]
+    sailpath.append(i)
+Sailpathsfile.close()
+
+
+def readfileData(filepath):
+    file = open(filepath,'r')
+    linesarray = []
+    for i in file:
+        linesarray.append(i)
+    file.close()
+    return linesarray
+
+def addsailpath(path):
+    file = open(".\\data\\starting_paths.txt",'r+')
+    newpath = fixpath(path) + "\n"
+    for i in file:
+        if i != newpath:
+            continue
+        else:
+            print("this path already exists")
+            return
+    file.write(newpath)
+    file.close()
+
+def fixpath (path):
+    newpath = ''
+    for i in path:
+        if i == "\\":
+            newpath = newpath + "\\"
+        newpath = newpath + i 
+    return newpath
+
+
+def sail(command_list):
+    if(len(sailpath) == 0 and (not deafultSailpath)):
+        print("""no Starting point are available use command Sail add "path" to add one!""")
+    elif len(sailpath) == 1 and command_list[0] == "sail":
+        pathlists = readfileData('.\\data\\starting_paths.txt')
+        for i in range(len(pathlists)):
+            print(i,')', pathlists[i])
+    elif deafultSailpath:
+        sailpath = defaultSailpath
+    elif(command_list[1] == "add"):
+        if validatepath(command_list[2]):
+            addsailpath(command_list[2])
+
 
 def FilesList(path):
     listoffiles = os.listdir(path)
     return listoffiles
 
 
+def validatepath(path):
+    if os.path.exists(path):
+        return True
+    else:
+        return False
+
+def commandargumentslist(command):
+    
+    argumentsList = command.split()
+
+    return argumentsList
+
+
 def filesTypes(list):
+    if type(list) == str:
+        list = [list]
     listoftypes = []
     for file in list:
-        for i in range(0, len(file)):
-            if file[i] == "." and IsItIn(listoftypes, file[i+1:]):
+        for i in range(len(file)-1,-1,-1):
+            if file[i] == "." and not IsItIn(listoftypes, file[i+1:]):
                 listoftypes.append(file[i+1:])
+                break
+    if(len(listoftypes) == 1):
+        return listoftypes[0]
+    else:
+        return listoftypes
+
+
+def filesContentsTypes(list,path):
+    listoftypes = []
+    for file in list:
+        filetype = magic.from_filename(path+"\\"+file)
+        for i in range(0,len(filetype)):
+            if filetype[i] == "," and not IsItIn(listoftypes, filetype[:i-1]):
+                listoftypes.append(filetype[:i-1])
+                break
     return listoftypes
 
 
 def IsItIn(array, element):
     for i in array:
         if i == element:
-            return False
-    return True
+            return True
+    return False
 
 
 def CreateDirectory(path, directoryName):
@@ -32,36 +117,37 @@ def CreateDirectory(path, directoryName):
             i+=1
         else:
             os.mkdir(newDirectory)
+            break
     return newDirectory
 
-
-def Thetypefile(filesname):
-    for i in range(0, len(filesname)):
-        if filesname[i] == ".":
-            return filesname[i+1:]
 
 
 def SortFilesAlphabetically(path, fileslist):
     filesAlphbeticlist = []
     for i in fileslist:
         if os.path.isfile(path+"\\"+i):
-            if not IsItIn(filesAlphbeticlist,i[0]):
+            if IsItIn(filesAlphbeticlist,i[0].upper()):
                 filesAlphbeticlist.append(i[0])
-                newDir = CreateDirectory(path,i)
-                fileslist.remove(i)
+                newDir = CreateDirectory(path,i[0].upper())
                 source_file = path +"\\"+i
                 shutil.move(source_file,newDir)
-            elif IsItIn(filesAlphbeticlist,i[0]):
-                fileslist.remove(i)
+            else:
                 source_file = path +"\\"+i
-                shutil.move(source_file,path+"\\"+i)
+                shutil.move(source_file,path+"\\"+i[0].upper())
+        print(fileslist)
+
+
+# def Onload(path,listofdir,):
+
+
+
 
 
 def SortFilesBasedOntype(path, typeslist, fileslist):
     for i in typeslist:
         CreateDirectory(path, i)
         for j in fileslist:
-            if (i == Thetypefile(j)):
+            if (i == filesTypes(j)):
                 source_file = path+"\\"+j
                 destination_file = path+"\\"+i+"\\"+j
                 shutil.move(source_file, destination_file)
@@ -135,10 +221,11 @@ def sizeofDirectory(path, fileslist, Unit="MB"):
     return fileSizeconverter(size, Unit)
 
 
-path = input("Enter path:")
+# path = input("Enter path:")
 
 # SortFilesBasedOntype(path, filesTypes(FilesList(path)), FilesList(path))
 # CreateDirectory(path,"HelleWorld!")
 # SortFilesBasedonsize(path,FilesList(path))
-SortFilesAlphabetically(path, FilesList(path))
+# print(FilesList(path))
+# print(FilesList(path))
 
