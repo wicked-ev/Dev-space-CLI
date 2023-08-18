@@ -16,14 +16,13 @@ CommandGuid = [['sail','->','<-','copy','add','setdef'],
 while True and Progstatus == "running":
     command = str(input())
     arrayCommand = function.commandargumentslist(command)
-    for i in commandslist:
-        if i == arrayCommand[0]:
-            match arrayCommand[0]:
-                case 'sail':
-                    function.sail()
-                case 'ex':
-                    Progstatus = "exiting"
-                case _:
-                    resault = subprocess.run(command,shell = True,capture_output=True, text = True)
-
+    match arrayCommand[0]:
+        case 'sail':
+            function.sail(arrayCommand)
+        case 'ex':
+            Progstatus = "exiting"
+        case other:
+            print ("Shell command")
+            resault = subprocess.run(command,shell = True,capture_output=True, text = True)
+            print(resault.stdout)
 

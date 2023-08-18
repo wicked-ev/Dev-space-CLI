@@ -6,11 +6,15 @@ import magic
 
 Sailpathsfile = open(".\\data\\starting_paths.txt",'r+')
 sailpath = []
-deafultSailpath = ''
+TheMainSailpath = False
+deafultSailpath = False
+
 for i in Sailpathsfile:
     if i[0:1] ==  "D_":
         deafultSailpath = i[1:]
     sailpath.append(i)
+if not deafultSailpath:
+    print("not deafult Sail path is set")
 Sailpathsfile.close()
 
 
@@ -22,6 +26,15 @@ def readfileData(filepath):
     file.close()
     return linesarray
 
+
+def printlist(list,index = True):
+    for i in range(len(list)):
+        if(index):
+            print("["+i +"]"+ list[i])
+        else:
+            print(list[i])
+
+
 def addsailpath(path):
     file = open(".\\data\\starting_paths.txt",'r+')
     newpath = fixpath(path) + "\n"
@@ -30,8 +43,10 @@ def addsailpath(path):
             continue
         else:
             print("this path already exists")
+            file.close()
             return
     file.write(newpath)
+    sailpath.append(newpath)
     file.close()
 
 def fixpath (path):
@@ -44,17 +59,28 @@ def fixpath (path):
 
 
 def sail(command_list):
-    if(len(sailpath) == 0 and (not deafultSailpath)):
+    global TheMainSailpath
+    if len(sailpath) == 0 and (not deafultSailpath) and (not TheMainSailpath) and len(command_list) == 0:
         print("""no Starting point are available use command Sail add "path" to add one!""")
-    elif len(sailpath) == 1 and command_list[0] == "sail":
+    elif len(command_list) == 1 and command_list[0] == "sail":
         pathlists = readfileData('.\\data\\starting_paths.txt')
-        for i in range(len(pathlists)):
-            print(i,')', pathlists[i])
+        printlist(pathlists)
     elif deafultSailpath:
-        sailpath = defaultSailpath
+        TheMainSailpath = deafultSailpath
+        print("sail path set to "+ deafultSailpath)
     elif(command_list[1] == "add"):
         if validatepath(command_list[2]):
             addsailpath(command_list[2])
+    elif(command_list[1] == "p" or command_list[1] == "pick"):
+        tmp = command_list[2]
+        try:
+            tmp = int(command_list[2])
+            if tmp < len(sailpath) and tmp >= 0:
+                TheMainSailpath = command_list[2]
+        except ValueError:  print("Invalid value for command")
+
+
+
 
 
 def FilesList(path):
@@ -69,9 +95,7 @@ def validatepath(path):
         return False
 
 def commandargumentslist(command):
-    
     argumentsList = command.split()
-
     return argumentsList
 
 
